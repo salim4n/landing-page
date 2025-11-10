@@ -195,6 +195,9 @@ export const messages = {
 				button: "Contact Us",
 			},
 		},
+		clients: {
+			title: "They trusted us",
+		},
 		cta: {
 			title: "Ready to Enhance Your Business with AI?",
 			subtitle:
@@ -506,6 +509,9 @@ export const messages = {
 				description: "Discutons de comment ce service peut transformer votre entreprise.",
 				button: "Nous Contacter",
 			},
+		},
+		clients: {
+			title: "Ils nous ont fait confiance",
 		},
 		cta: {
 			title: "Prêt à Améliorer Votre Entreprise avec l'IA ?",

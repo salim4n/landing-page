@@ -6,6 +6,7 @@ import Footer from "@/components/footer";
 import ContactChat from "@/components/contact-chat";
 import ServiceModal from "@/components/service-modal";
 import VectorDbButton from "@/components/vector-db-button";
+import ClientsCarousel from "@/components/clients-carousel";
 import { useI18n } from "@/lib/i18n/use-i18n";
 import { Bot, Brain, MessageSquare, Zap, Database, Shield } from "lucide-react";
 
@@ -177,6 +178,9 @@ export default function Home() {
 					</div>
 				</div>
 			</section>
+
+			{/* Clients Carousel Section */}
+			<ClientsCarousel />
 
 			{/* Features Section */}
 			<section className="py-24 px-4 bg-white dark:bg-gray-900">
