@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { Github, Linkedin, BookOpen, Shield } from "lucide-react";
+import { Github, Linkedin, BookOpen } from "lucide-react";
 import { useI18n } from "@/lib/i18n/use-i18n";
 import AboutModal from "./about-modal";
 
@@ -42,32 +41,22 @@ export default function Footer() {
 						<h4 className="text-white font-semibold mb-4">{t.footer.services}</h4>
 						<ul className="space-y-3">
 							<li>
-								<Link
-									href="/services#rag"
+								<a
+									href="https://www.genailabs.dev/"
+									target="_blank"
+									rel="noopener noreferrer"
 									className="hover:text-blue-400 transition-colors cursor-pointer">
-									{t.services.rag.title}
-								</Link>
+									GenAI Labs - Courses
+								</a>
 							</li>
 							<li>
-								<Link
-									href="/services#chatbots"
+								<a
+									href="https://www.malt.fr/profile/salimlaimeche"
+									target="_blank"
+									rel="noopener noreferrer"
 									className="hover:text-blue-400 transition-colors cursor-pointer">
-									{t.services.chatbots.title}
-								</Link>
-							</li>
-							<li>
-								<Link
-									href="/services#llm"
-									className="hover:text-blue-400 transition-colors cursor-pointer">
-									{t.services.llm.title}
-								</Link>
-							</li>
-							<li>
-								<Link
-									href="/services#agents"
-									className="hover:text-blue-400 transition-colors cursor-pointer">
-									{t.services.agents.title}
-								</Link>
+									Freelancing
+								</a>
 							</li>
 						</ul>
 					</div>
@@ -115,6 +104,24 @@ export default function Footer() {
 									<span>Pretorian System</span>
 								</a>
 							</li>
+							<li>
+								<a
+									href="https://nutricoach-ruddy.vercel.app/"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="hover:text-blue-400 transition-colors flex items-center gap-2">
+									<span>NutriCoach</span>
+								</a>
+							</li>
+							<li>
+								<a
+									href="https://ai-travel-wheat.vercel.app/"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="hover:text-blue-400 transition-colors flex items-center gap-2">
+									<span>Travel AI</span>
+								</a>
+							</li>
 						</ul>
 					</div>
 
@@ -152,16 +159,6 @@ export default function Footer() {
 									<span>Blog</span>
 								</a>
 							</li>
-							<li>
-								<a
-									href="https://www.pretorian-system.com/"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="hover:text-blue-400 transition-colors flex items-center gap-2">
-									<Shield size={20} />
-									<span>Pretorian System</span>
-								</a>
-							</li>
 						</ul>
 					</div>
 				</div>
@@ -170,7 +167,7 @@ export default function Footer() {
 					<p className="text-gray-500 text-sm mb-2">
 						© {new Date().getFullYear()} IgnitionAI - Tous droits réservés
 					</p>
-					<Link
+					<a
 						href="https://www.pappers.fr/entreprise/laimeche-salim-838691459"
 						target="_blank"
 						rel="noopener noreferrer"
@@ -178,7 +175,7 @@ export default function Footer() {
 						<span>SIREN: 838 691 459</span>
 						<span>•</span>
 						<span>Informations légales</span>
-					</Link>
+					</a>
 				</div>
 			</div>
 

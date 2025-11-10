@@ -22,21 +22,39 @@ export const DEFAULT_CONTEXT_CONFIG: ContextConfig = {
 };
 
 /**
- * User preferences and context extracted from conversation
+ * SDR-focused metadata extracted from conversation
  */
 export interface UserMetadata {
-    preferences?: {
-        budget?: string;
-        travelStyle?: string;
-        destinations?: string[];
-        dates?: string;
-    };
-    currentContext?: {
-        destination?: string;
-        dates?: string;
-        travelers?: number;
-        purpose?: string;
-    };
+	// Lead information
+	leadInfo?: {
+		firstName?: string;
+		lastName?: string;
+		email?: string;
+		company?: string;
+		country?: string;
+		phone?: string;
+	};
+	// BANT qualification
+	qualificationStatus?: {
+		budget?: string;
+		authority?: "decision-maker" | "influencer" | "researcher";
+		need?: string;
+		timeline?: string;
+	};
+	// Project details
+	projectContext?: {
+		description?: string;
+		painPoints?: string[];
+		currentSolutions?: string;
+		desiredOutcomes?: string[];
+	};
+	// Engagement signals
+	engagement?: {
+		questionsAsked?: number;
+		concernsRaised?: string[];
+		serviceInterest?: string[]; // RAG, chatbots, LLM, agents
+		sentiment?: "positive" | "neutral" | "negative";
+	};
 }
 
 /**
@@ -81,27 +99,42 @@ export class ContextManager {
             .map(m => m.content)
             .join('\n');
 
-        const prompt = `Extract travel preferences and context from this conversation. Return ONLY a JSON object.
+		const prompt = `Extract lead qualification information from this sales conversation. Return ONLY a valid JSON object.
 
 Conversation:
 ${conversationText}
 
-Extract all pertinent information from the conversation.
-Respect this generic format and adapt keys to the conversation : 
+Extract information in this exact structure (include only fields with actual values):
 {
-    "parentKey": {
-        "childKey": "value",
-        "childKey": "value",
-        "childKey": "value"
+    "leadInfo": {
+        "firstName": "string",
+        "lastName": "string",
+        "email": "string",
+        "company": "string",
+        "country": "string",
+        "phone": "string"
     },
-    "parentKey": {
-        "childKey": "value",
-        "childKey": "value",
-        "childKey": "value"
+    "qualificationStatus": {
+        "budget": "string (e.g., '50k-100k EUR', 'limited', 'flexible')",
+        "authority": "decision-maker | influencer | researcher",
+        "need": "string (main pain point or need)",
+        "timeline": "string (e.g., 'urgent', '1-3 months', 'exploring')"
+    },
+    "projectContext": {
+        "description": "string (what they want to build)",
+        "painPoints": ["string"],
+        "currentSolutions": "string (what they use now)",
+        "desiredOutcomes": ["string"]
+    },
+    "engagement": {
+        "questionsAsked": number,
+        "concernsRaised": ["string"],
+        "serviceInterest": ["RAG" | "chatbots" | "LLM" | "agents"],
+        "sentiment": "positive | neutral | negative"
     }
 }
 
-Return JSON only, no explanation:`;
+Return JSON only, no markdown, no explanation:`;
 
         try {
             const response = await this.llm.invoke([
@@ -149,10 +182,10 @@ Return JSON only, no explanation:`;
             })
             .join('\n');
 
-        const prompt = `Summarize this travel conversation in 2-3 concise sentences. Focus on:
-- What the user is looking for
-- Key preferences mentioned
-- Current stage of planning
+		const prompt = `Summarize this sales conversation in 2-3 concise sentences. Focus on:
+- What the prospect wants to achieve (their project/goal)
+- Key qualification signals (budget, authority, timeline, pain points)
+- Current engagement level and next steps
 
 Conversation:
 ${conversationText}

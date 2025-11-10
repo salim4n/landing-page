@@ -1,12 +1,13 @@
 import { MemorySaver } from "@langchain/langgraph";
 import { createAgent } from "langchain";
-import { MultiServerMCPClient } from "@langchain/mcp-adapters"; 
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { config } from "../../config";
 import { z } from "zod";
 import { ContextManager } from "../context/context-manager";
-import { IGNITIONAI_ASSISTANT_PROMPT } from "../prompts/system-prompts";
+import { getSDRPrompt } from "../prompts/system-prompts";
 import { ChatOpenAI } from "@langchain/openai";
+import { createSDRTools } from "../tools/sdr-tools";
+import { leadService } from "@/service/lead.service";
 
 // Zod schemas for runtime validation
 const MessageContentSchema = z.object({
@@ -53,13 +54,12 @@ type BaseMessage = z.infer<typeof BaseMessageSchema>;
 type ToolResult = z.infer<typeof ToolResultSchema>;
 
 class MyFirstAgent {
-    private model: ChatOpenAI;
-    private tools: DynamicStructuredTool[];
-    private memory: MemorySaver;
-    private graph: any;
-    private mcpClient: MultiServerMCPClient | null = null;
-    private isInitialized: boolean = false;
-    private contextManager: ContextManager;
+	private model: ChatOpenAI;
+	private tools: DynamicStructuredTool[];
+	private memory: MemorySaver;
+	private graph: any;
+	private isInitialized: boolean = false;
+	private contextManager: ContextManager;
 
     // Singleton
     private static instance: MyFirstAgent;
@@ -91,33 +91,24 @@ class MyFirstAgent {
         return MyFirstAgent.instance;
     }
 
-    /**
-     * Initialize the MCP client and load tools
-     * Must be called before using the agent
-     */
-    async initialize(): Promise<void> {
-        if (this.isInitialized) {
-            console.warn("Agent already initialized");
-            return;
-        }
+	/**
+	 * Initialize the agent with SDR tools and Azure Table Storage
+	 * Must be called before using the agent
+	 */
+	async initialize(): Promise<void> {
+		if (this.isInitialized) {
+			console.warn("Agent already initialized");
+			return;
+		}
 
-
-        this.mcpClient = new MultiServerMCPClient({  
-            amadeus: {
-                transport: "http",
-                url: config.amadeus_url,
-                headers: {
-                    "Authorization": `Bearer ${config.amadeus_bearer_token}`
-                }
-            },
-            nutrition: {
-                transport: "http",
-                url: config.nutrition_url,
-            }
-        });
-
-
-        const mcpTools = await this.mcpClient.getTools();
+		// Initialize Azure Tables for leads and conversations
+		try {
+			await leadService.initializeTables();
+			console.log("✅ Lead service initialized with Azure Tables");
+		} catch (error) {
+			console.error("⚠️  Failed to initialize Azure Tables:", error);
+			console.warn("Agent will continue but lead tracking may not work properly");
+		}
         
         // Outil pour obtenir la date actuelle
         const getCurrentDateTool = new DynamicStructuredTool({
@@ -237,15 +228,20 @@ Thematic options: 'ai_services', 'chatbot', 'rag_systems', 'multi_agent', 'gener
             }
         });
 
-        this.tools = [...mcpTools, getCurrentDateTool, ragSearchTool, advancedRagSearchTool]; 
+		// Base tools (SDR tools will be created per-thread in streamStructured)
+		this.tools = [
+			getCurrentDateTool,
+			ragSearchTool,
+			advancedRagSearchTool,
+		];
 
-        // Create the ReAct agent with optimized prompt
-        this.graph = createAgent({
-            model: this.model,
-            tools: this.tools,
-            checkpointer: this.memory,
-            systemPrompt: IGNITIONAI_ASSISTANT_PROMPT
-        });
+		// Create the ReAct agent with SDR prompt (default FR, will be updated per request)
+		this.graph = createAgent({
+			model: this.model,
+			tools: this.tools,
+			checkpointer: this.memory,
+			systemPrompt: getSDRPrompt("fr"), // Default to French
+		});
 
         this.isInitialized = true;
         console.log(`Agent initialized with ${this.tools.length} tools`);
@@ -474,22 +470,53 @@ Thematic options: 'ai_services', 'chatbot', 'rag_systems', 'multi_agent', 'gener
      * Stream with structured events for Generative UI
      * Emits different event types: thinking, tool_call_start, tool_result, ui_component, text
      */
-    async *streamStructured(message: string, threadId: string = "default") {
-        this.ensureInitialized();
-        
-        // Prepare context before streaming
-        await this.prepareContext(threadId);
-        
-        const config = { 
-            configurable: { thread_id: threadId },
-            tags: ["travel-agent", "context-engineering", "optimized", `thread:${threadId}`, "streaming"],
-            metadata: {
-                optimization: "enabled",
-                thread_id: threadId,
-                agent_type: "travel",
-                stream_mode: "structured"
-            }
-        };
+	async *streamStructured(
+		message: string,
+		threadId: string = "default",
+		locale: "fr" | "en" = "fr",
+	) {
+		this.ensureInitialized();
+
+		// Create SDR tools with threadId context
+		const sdrTools = createSDRTools(threadId);
+
+		// Recreate tools array with SDR tools for this thread
+		const toolsForThread = [
+			this.tools[0], // getCurrentDateTool
+			this.tools[1], // ragSearchTool
+			this.tools[2], // advancedRagSearchTool
+			...sdrTools, // capture_lead_info, calculate_lead_score, send_telegram_notification with threadId
+		];
+
+		// Recreate agent with correct locale prompt and thread-specific tools
+		this.graph = createAgent({
+			model: this.model,
+			tools: toolsForThread,
+			checkpointer: this.memory,
+			systemPrompt: getSDRPrompt(locale),
+		});
+
+		// Prepare context before streaming
+		await this.prepareContext(threadId);
+
+		const config = {
+			configurable: { thread_id: threadId },
+			tags: [
+				"sdr-agent",
+				"lead-qualification",
+				"optimized",
+				`thread:${threadId}`,
+				"streaming",
+				`locale:${locale}`,
+			],
+			metadata: {
+				optimization: "enabled",
+				thread_id: threadId,
+				agent_type: "sdr",
+				stream_mode: "structured",
+				locale,
+			},
+		};
         const stream = await this.graph.stream(
             { messages: [{ role: "user", content: message }] },
             config,
@@ -653,15 +680,16 @@ Thematic options: 'ai_services', 'chatbot', 'rag_systems', 'multi_agent', 'gener
      * Extract clean thinking text from ReAct format
      */
     private extractThinkingText(textContent: string): string {
-        // Only extract and return Final Answer, skip Thoughts
+        // Extract Final Answer if present
         const finalAnswerMatch = textContent.match(/Final Answer:\s*([\s\S]+?)$/);
-        
+
         if (finalAnswerMatch) {
             return finalAnswerMatch[1].trim();
         }
-        
-        // If no Final Answer, don't return anything (skip intermediate thoughts)
-        return '';
+
+        // Return full text for intermediate thoughts so users see real-time progress
+        // This prevents blank screen during agent execution
+        return textContent.trim();
     }
 
     /**

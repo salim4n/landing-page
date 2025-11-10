@@ -35,8 +35,8 @@ export default function ContactChat() {
 			role: "assistant",
 			content:
 				locale === "fr"
-					? "👋 Bonjour ! Je suis l'**Agent IA d'IgnitionAI**.\n\nJe dispose de plusieurs outils spécialisés :\n\n- 🔍 **Vector Store RAG** : Recherche sémantique dans notre base de connaissances\n- ✈️ **Amadeus Travel** : Recherche de vols, hôtels et activités (capitales européennes)\n- 🥗 **Nutrition API** : Profils nutritionnels personnalisés\n\nJe peux aussi vous renseigner sur nos services d'IA :\n- 🔮 **Systèmes RAG** • 💬 **Chatbots** • 🧠 **Solutions LLM** • 🤖 **Multi-agents**\n\nComment puis-je vous aider ?"
-					: "👋 Hello! I'm **IgnitionAI's AI Agent**.\n\nI have access to specialized tools:\n\n- 🔍 **Vector Store RAG**: Semantic search in our knowledge base\n- ✈️ **Amadeus Travel**: Flights, hotels & activities (European capitals)\n- 🥗 **Nutrition API**: Personalized nutrition profiles\n\nI can also inform you about our AI services:\n- 🔮 **RAG Systems** • 💬 **Chatbots** • 🧠 **LLM Solutions** • 🤖 **Multi-agents**\n\nHow can I help you?",
+					? "👋 Bonjour ! Je suis **Sophie**, consultante IA chez IgnitionAI.\n\nJe suis là pour discuter de vos projets d'intelligence artificielle et vous aider à trouver les meilleures solutions pour votre entreprise.\n\n💡 **Je peux vous conseiller sur** :\n- 🔮 **Systèmes RAG Entreprise** : Valorisez vos données propriétaires\n- 💬 **Agents Conversationnels** : Automatisez votre support client\n- 🧠 **Solutions LLM** : GPT-4, Claude, LLaMA sur mesure\n- 🤖 **Systèmes Multi-Agents** : Automatisation intelligente\n\nComment puis-je vous aider aujourd'hui ? 😊"
+					: "👋 Hello! I'm **Sophie**, AI consultant at IgnitionAI.\n\nI'm here to discuss your artificial intelligence projects and help you find the best solutions for your business.\n\n💡 **I can advise you on**:\n- 🔮 **Enterprise RAG Systems**: Leverage your proprietary data\n- 💬 **Conversational Agents**: Automate customer support\n- 🧠 **LLM Solutions**: Custom GPT-4, Claude, LLaMA\n- 🤖 **Multi-Agent Systems**: Intelligent automation\n\nHow can I help you today? 😊",
 		};
 		setMessages([welcomeMessage]);
 	}, [locale]);
@@ -63,6 +63,7 @@ export default function ContactChat() {
 				body: JSON.stringify({
 					message: messageToSend,
 					threadId: threadId,
+					locale: locale,
 				}),
 			});
 
@@ -147,16 +148,16 @@ export default function ContactChat() {
 	const suggestedQuestions =
 		locale === "fr"
 			? [
-					"Qu'est-ce que la recherche sémantique ?",
-					"Trouve-moi un vol Paris-Londres",
-					"Crée mon profil nutritionnel",
 					"Quels sont vos services IA ?",
+					"Comment automatiser mon support client ?",
+					"Quel est le coût d'un système RAG ?",
+					"Comment intégrer un chatbot sur mon site ?",
 			  ]
 			: [
-					"What is semantic search?",
-					"Find me a flight Paris-London",
-					"Create my nutrition profile",
 					"What are your AI services?",
+					"How to automate customer support?",
+					"What's the cost of a RAG system?",
+					"How to integrate a chatbot on my website?",
 			  ];
 
 	return (

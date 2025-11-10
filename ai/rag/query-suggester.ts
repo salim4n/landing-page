@@ -21,59 +21,64 @@ export interface QuerySuggestions {
  * Thematic-specific prompt templates for query suggestions
  */
 const SUGGESTION_TEMPLATES = {
-    ai_services: `You are an AI consultant assistant helping users explore AI services and solutions.
+    ai_services: `Generate follow-up questions that a potential CLIENT would ask an AI service provider.
 
-Based on the conversation, suggest 5 diverse follow-up questions that:
+Based on the conversation, suggest 5 diverse questions from the CLIENT's perspective that:
 1. Address practical concerns (pricing, implementation timeline, ROI)
 2. Explore technical details (technology stack, integrations, scalability)
 3. Request examples or case studies
 4. Ask about support and maintenance
 5. Clarify specific AI capabilities or use cases
 
+Example CLIENT questions: "Combien coûte votre solution?", "Pouvez-vous intégrer avec Salesforce?", "Avez-vous des cas d'usage dans mon secteur?"
 Focus on: AI consulting, ML implementation, LLM solutions, enterprise AI transformation.`,
 
-    chatbot: `You are a chatbot specialist assistant helping users understand conversational AI.
+    chatbot: `Generate follow-up questions that a potential CLIENT would ask a chatbot service provider.
 
-Based on the conversation, suggest 5 diverse follow-up questions that:
+Based on the conversation, suggest 5 diverse questions from the CLIENT's perspective that:
 1. Ask about implementation (time, cost, complexity)
 2. Explore features (NLP, multi-language, integrations)
 3. Request examples or demos
 4. Inquire about customization and training
 5. Ask about analytics and performance
 
+Example CLIENT questions: "Combien de temps prend l'implémentation?", "Quelles langues supportez-vous?", "Puis-je voir une démo?"
 Focus on: Chatbot development, conversational AI, customer service automation, virtual assistants.`,
 
-    rag_systems: `You are a RAG systems expert helping users understand retrieval-augmented generation.
+    rag_systems: `Generate follow-up questions that a potential CLIENT would ask a RAG systems provider.
 
-Based on the conversation, suggest 5 diverse follow-up questions that:
+Based on the conversation, suggest 5 diverse questions from the CLIENT's perspective that:
 1. Explore architecture and components
 2. Ask about vector databases and embeddings
 3. Inquire about performance and scalability
 4. Request implementation guidance
 5. Ask about integration with existing systems
 
+Example CLIENT questions: "Comment fonctionne votre système RAG?", "Quels documents puis-je utiliser?", "Quel est le délai d'implémentation?"
 Focus on: RAG architecture, vector search, semantic retrieval, document processing.`,
 
-    multi_agent: `You are a multi-agent systems expert helping users understand distributed AI.
+    multi_agent: `Generate follow-up questions that a potential CLIENT would ask a multi-agent systems provider.
 
-Based on the conversation, suggest 5 diverse follow-up questions that:
+Based on the conversation, suggest 5 diverse questions from the CLIENT's perspective that:
 1. Explore agent coordination and communication
 2. Ask about use cases and applications
 3. Inquire about scalability and performance
 4. Request architecture examples
 5. Ask about development complexity
 
+Example CLIENT questions: "Quels sont les cas d'usage concrets?", "Comment les agents communiquent-ils?", "Est-ce complexe à mettre en place?"
 Focus on: Multi-agent systems, agent orchestration, autonomous agents, distributed AI.`,
 
-    general: `You are a helpful AI assistant guiding users through their questions.
+    general: `Generate follow-up questions that a potential CLIENT would ask an AI service provider.
 
-Based on the conversation, suggest 5 diverse follow-up questions that:
+Based on the conversation, suggest 5 diverse questions from the CLIENT's perspective that:
 1. Dig deeper into the current topic
 2. Address practical implementation concerns
 3. Request specific examples or clarifications
 4. Explore related topics or features
 5. Ask about next steps or getting started
 
+Example CLIENT questions: "Comment puis-je commencer?", "Avez-vous des exemples?", "Combien cela coûte-t-il?"
 Make suggestions natural, specific, and contextually relevant.`
 };
 
@@ -122,7 +127,13 @@ export class QuerySuggester {
 CONVERSATION CONTEXT:
 ${contextSummary}
 
-Generate exactly 5 follow-up questions that would be useful for the user.
+Generate exactly 5 follow-up questions that the CLIENT/USER would ask the AI SERVICE PROVIDER to continue the conversation.
+
+CRITICAL: Questions must be from the CLIENT's perspective asking the SERVICE PROVIDER:
+✓ CORRECT: "Combien coûte votre solution?" (client asking provider about price)
+✓ CORRECT: "Pouvez-vous intégrer avec mon CRM?" (client asking provider about integration)
+✗ WRONG: "Quel est votre budget?" (provider asking client - DO NOT DO THIS)
+✗ WRONG: "Avez-vous déjà un système en place?" (provider asking client - DO NOT DO THIS)
 
 Requirements:
 - Each question should be unique and explore a different angle
@@ -130,7 +141,7 @@ Requirements:
 - Keep questions concise (5-15 words each)
 - Make them specific to the context (avoid generic questions)
 - Address both immediate needs and broader exploration
-- Questions should encourage further engagement
+- Questions should encourage the client to learn more about the service
 
 Return as a JSON array of strings: ["question 1", "question 2", "question 3", "question 4", "question 5"]
 
@@ -205,39 +216,39 @@ JSON array:`;
 
         const fallbackByThematic: Record<string, string[]> = {
             ai_services: [
-                "What are your AI implementation services?",
-                "How much does an AI solution typically cost?",
-                "Can you show me examples of AI projects you've done?",
-                "How long does it take to implement an AI solution?",
-                "What kind of support do you provide after implementation?"
+                "What AI solutions do you offer for my business?",
+                "What's the ROI of implementing your AI solutions?",
+                "Can you integrate with my existing CRM or tools?",
+                "How long does implementation typically take?",
+                "Do you provide training and ongoing support?"
             ],
             chatbot: [
-                "What features do your chatbots include?",
-                "How do I integrate a chatbot on my website?",
-                "Can the chatbot handle multiple languages?",
-                "What's the difference between your chatbots and ChatGPT?",
-                "How much does a custom chatbot cost?"
+                "How can a chatbot help me qualify leads automatically?",
+                "Can your chatbot integrate with Salesforce or HubSpot?",
+                "What languages does your chatbot support?",
+                "How much does a custom sales chatbot cost?",
+                "Can I see a demo of your chatbot in action?"
             ],
             rag_systems: [
-                "How does a RAG system work?",
-                "What are the benefits of using RAG?",
-                "Can you help implement a RAG system?",
-                "What vector databases do you recommend?",
-                "How do I get started with RAG?"
+                "How can RAG improve my customer support efficiency?",
+                "What documents can I use to train a RAG system?",
+                "What's the implementation timeline for a RAG solution?",
+                "Can RAG reduce my support team's workload?",
+                "What's the pricing structure for RAG systems?"
             ],
             multi_agent: [
-                "What are multi-agent systems used for?",
-                "How do agents communicate with each other?",
-                "Can you build a multi-agent system for my use case?",
-                "What are the challenges in multi-agent development?",
-                "Do you have examples of multi-agent applications?"
+                "How can multi-agent systems automate my sales process?",
+                "What use cases work best for multi-agent systems?",
+                "Can agents handle lead qualification and follow-ups?",
+                "What's the complexity of implementing multi-agent systems?",
+                "Do you have case studies for multi-agent implementations?"
             ],
             general: [
-                "Tell me more about your services",
-                "What makes your solutions different?",
-                "Can I see some examples of your work?",
-                "How do I get started?",
-                "What are the typical costs?"
+                "What AI solutions help me generate more qualified leads?",
+                "How can AI reduce my customer acquisition costs?",
+                "Can you integrate AI with my existing sales workflow?",
+                "What's the typical timeline from project start to go-live?",
+                "Do you offer a pilot program or proof of concept?"
             ]
         };
 

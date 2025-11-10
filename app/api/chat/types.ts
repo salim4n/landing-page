@@ -1,7 +1,8 @@
 export interface ChatRequest {
-    message: string;
-    threadId?: string;
-    userId?: string;
+	message: string;
+	threadId?: string;
+	userId?: string;
+	locale?: "fr" | "en";
 }
 
 export interface ChatResponse {

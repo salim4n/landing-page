@@ -11,8 +11,8 @@ import { MyFirstAgent } from '@/ai/agent/agent';
  */
 export async function POST(request: NextRequest) {
     try {
-        const body: ChatRequest = await request.json();
-        const { message, threadId } = body;
+		const body: ChatRequest = await request.json();
+		const { message, threadId, locale = "fr" } = body;
 
         if (!message || typeof message !== 'string') {
             return new Response(
@@ -44,7 +44,11 @@ export async function POST(request: NextRequest) {
                     let fullResponse = '';
                     let detectedThematic: string | undefined;
 
-                    for await (const event of agent.streamStructured(message, finalThreadId)) {
+					for await (const event of agent.streamStructured(
+						message,
+						finalThreadId,
+						locale,
+					)) {
                         sendEvent(event);
 
                         // Accumulate text for final response

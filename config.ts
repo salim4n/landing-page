@@ -12,6 +12,16 @@ class Config {
     have_amadeus_url: boolean = false;
     nutrition_url: string = "";
     have_nutrition_url: boolean = false;
+    telegram_bot_token: string = "";
+    have_telegram_bot_token: boolean = false;
+    telegram_sales_chat_id: string = "";
+    have_telegram_sales_chat_id: boolean = false;
+    azure_storage_connection_string: string = "";
+    have_azure_storage_connection_string: boolean = false;
+    azure_leads_table_name: string = "";
+    have_azure_leads_table_name: boolean = false;
+    azure_conversations_table_name: string = "";
+    have_azure_conversations_table_name: boolean = false;
 
     constructor() {
         this.init();
@@ -36,6 +46,16 @@ class Config {
         this.amadeus_url = this.populate("AMADEUS_URL");
         this.have_nutrition_url = this.apiKeyExists("NUTRITION_URL");
         this.nutrition_url = this.populate("NUTRITION_URL");
+        this.have_telegram_bot_token = this.apiKeyExists("TELEGRAM_BOT_TOKEN");
+        this.telegram_bot_token = this.populate("TELEGRAM_BOT_TOKEN");
+        this.have_telegram_sales_chat_id = this.apiKeyExists("TELEGRAM_SALES_CHAT_ID");
+        this.telegram_sales_chat_id = this.populate("TELEGRAM_SALES_CHAT_ID");
+        this.have_azure_storage_connection_string = this.apiKeyExists("AZURE_STORAGE_CONNECTION_STRING");
+        this.azure_storage_connection_string = this.populate("AZURE_STORAGE_CONNECTION_STRING");
+        this.have_azure_leads_table_name = this.apiKeyExists("AZURE_LEADS_TABLE_NAME");
+        this.azure_leads_table_name = this.populate("AZURE_LEADS_TABLE_NAME");
+        this.have_azure_conversations_table_name = this.apiKeyExists("AZURE_CONVERSATIONS_TABLE_NAME");
+        this.azure_conversations_table_name = this.populate("AZURE_CONVERSATIONS_TABLE_NAME");
     }
 }
 
