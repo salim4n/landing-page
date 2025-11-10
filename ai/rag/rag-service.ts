@@ -81,17 +81,28 @@ class RAGService {
 
     /**
      * Load vectors from Azure Table Storage
+     * Direct service call (works in both local and Vercel environments)
      */
     private async loadVectors(): Promise<void> {
         try {
-            const response = await fetch('http://localhost:3000/api/vectors');
-            if (!response.ok) {
-                throw new Error(`Failed to fetch vectors: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            this.vectors = data.vectors || [];
-            console.log(`[RAG] Loaded ${this.vectors.length} vectors from Azure`);
+            // Import Azure service dynamically for tree-shaking and server-only execution
+            const { getAllVectorsInTable } = await import('@/service/azure-table.service');
+
+            // Fetch vectors directly from Azure Table Storage
+            const entities = await getAllVectorsInTable();
+
+            // Transform Azure entities to RAG vector format
+            this.vectors = entities.map(entity => ({
+                id: entity.id,
+                text: entity.text,
+                embedding: entity.vector,
+                metadata: {
+                    category: entity.category,
+                    timestamp: entity.timestamp,
+                },
+            }));
+
+            console.log(`[RAG] Loaded ${this.vectors.length} vectors from Azure Table Storage`);
         } catch (error) {
             console.error('[RAG] Failed to load vectors:', error);
             this.vectors = [];
